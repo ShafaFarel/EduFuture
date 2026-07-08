@@ -6,7 +6,7 @@ Menggunakan mesin klasifikasi **XGBoost** untuk prediksi keselarasan jurusan, mo
 
 ---
 
-## 🛠️ Stack Teknologi
+## Stack Teknologi
 
 Platform ini dibangun menggunakan arsitektur **Monorepo** yang memisahkan aplikasi Frontend dan Backend Service secara modular:
 
@@ -41,7 +41,7 @@ EduFuture/
 │
 ├── Backend/                # FastAPI Machine Learning Service
 │   ├── models/             # File pkl model ML hasil training & career mapping JSON
-│   ├── routers/            # Endpoint modular (auth, predict, mentor)
+│   ├── routers/             # Endpoint modular (auth, predict, mentor)
 │   ├── database.py         # Inisialisasi Supabase client
 │   ├── dependencies.py     # Middleware otentikasi token
 │   ├── main.py             # Entry point FastAPI & lifespan model loader
@@ -57,21 +57,16 @@ EduFuture/
 
 ### Langkah 1: Persiapan Environment Variables (`.env`)
 
-#### 1. Konfigurasi Backend
-Untuk memudahkan penilaian oleh Juri/Reviewer, kami menyediakan berkas sandbox testing credentials **`.env.example`** di dalam folder `Backend/` yang sudah terisi kredensial aktif Supabase dan Groq API. 
+Buat berkas `.env` secara manual di dalam folder `Backend/` dengan kunci berikut:
 
-Juri hanya perlu menyalin atau mengubah nama berkas tersebut menjadi **`.env`** di dalam folder `Backend/`:
-```bash
-# Salin berkas .env.example menjadi .env
-cp Backend/.env.example Backend/.env
-```
-
-Atau jika ingin menggunakan akun Supabase & Groq API Anda sendiri, silakan buat berkas `.env` secara manual di dalam folder `Backend/` dengan kunci berikut:
 ```env
 SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_KEY=your-supabase-service-role-key
 GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
+
+Kredensial aktif untuk pengujian akan dikirimkan oleh tim secara terpisah melalui platform pengumpulan lomba.
 
 ---
 
@@ -121,7 +116,7 @@ GROQ_API_KEY=gsk_your_groq_api_key_here
 
 ---
 
-## 📋 Fitur Utama Aplikasi
+## Fitur Utama Aplikasi
 
 1. **Dashboard & Peta Jalan Karir**: Menganalisis nilai rapor (Matematika, Sains, Bahasa, Logika) dan gaya belajar untuk menghasilkan visualisasi top-3 skenario karir (Utama, Alternatif, Aman) lengkap dengan estimasi gaji.
 2. **AI Mentor Chatbot**: Konsultasi kelanjutan karir interaktif berbasis konteks nilai rapor siswa yang dijawab secara langsung oleh Llama 3.1.
@@ -130,5 +125,5 @@ GROQ_API_KEY=gsk_your_groq_api_key_here
 
 ---
 
-## ⚖️ Pernyataan Keaslian Karya & Lisensi
+## Pernyataan Keaslian Karya & Lisensi
 Karya software ini dibuat secara orisinal oleh tim pengembang dalam ajang kompetisi **CODE 6.0 Software Development 2026**. Seluruh kode sumber dilindungi oleh lisensi kepemilikan tim dan tidak diperkenankan untuk disalin tanpa izin tertulis.
