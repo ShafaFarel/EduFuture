@@ -65,13 +65,13 @@ export default function LandingPage({ setActiveView }) {
           {/* Headline - Vercel style centered display-xl */}
           <h1 className="font-display font-semibold text-ink leading-[1.0] tracking-[-0.05em] max-w-4xl mx-auto"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}>
-            Jalur pendidikan kamu. Dipetakan dengan presisi.
+            Karir impianmu tersebunyi dibalik nilai rapormu.
           </h1>
 
           <p className="mt-6 text-base text-ink-muted max-w-2xl mx-auto leading-relaxed">
-            Platform prediktor jurusan sekolah menengah berbasis mesin <span className="text-ink font-semibold">XGBoost</span>. 
-            Menganalisis nilai rapor secara objektif untuk mensintesis rekomendasi jalur kuliah dan karir masa depan.
-          </p>
+            Sistem prediksi berbasis <span className="text-ink font-semibold">XGBoost</span>.
+           Menganalisis profil akademismu secara objektif - dan menghasilkan 3 skenario jalur karir yang paling cocok untukmu. Gratis dan instan. 
+           </p>
 
           {/* CTA Buttons */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
