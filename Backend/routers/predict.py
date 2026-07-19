@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import xgboost as xgb
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from database import supabase
@@ -15,22 +16,15 @@ router = APIRouter()
 
 
 def _format_salary(raw: float) -> str:
-    # Cegah nilai negatif dari prediksi ML
     if raw < 0:
         raw = abs(raw)
-    
-    # Deteksi skala (apakah satuan juta atau nilai penuh rupiah)
     if raw < 1000:
         value = int(raw * 1_000_000)
     else:
         value = int(raw)
-    
-    # Batas bawah realistis (UMR default jika prediksi anomali sangat rendah)
     if value < 2_000_000:
         value = 4_500_000
-        
     return f"Rp {value:,}".replace(",", ".")
-
 
 
 @router.post("/predict", response_model=DigitalTwinOutput)
@@ -42,15 +36,14 @@ def predict(
     try:
         ml = request.app.state.ml_assets
 
-        le_style = ml["le_style"]
-        le_major = ml["le_major"]
-        model = ml["model"]
-        salary_predictor = ml["salary_predictor"]
+        style_to_int = ml["style_to_int"]
+        int_to_major = ml["int_to_major"]
+        major_model = ml["major_model"]
+        salary_model = ml["salary_model"]
         career_map = ml["career_map"]
 
-        style_encoded: int = le_style.transform([student.learning_style])[0]
+        style_encoded: int = style_to_int[student.learning_style]
 
-        # Hitung fitur statistik tambahan (Feature Engineering)
         scores = [
             student.math_score,
             student.science_score,
@@ -62,8 +55,7 @@ def predict(
         highest_score = max(scores)
         lowest_score = min(scores)
 
-        # Buat DataFrame sesuai fitur yang diharapkan model XGBoost
-        input_data = pd.DataFrame([{
+        input_df = pd.DataFrame([{
             "Math_Score": student.math_score,
             "Science_Score": student.science_score,
             "Language_Score": student.language_score,
@@ -75,16 +67,17 @@ def predict(
             "Lowest_Score": lowest_score,
         }])
 
-        probabilities: np.ndarray = model.predict_proba(input_data)[0]
+        dmatrix = xgb.DMatrix(input_df)
+        probabilities: np.ndarray = major_model.predict(dmatrix)[0]
         top_3_indices: np.ndarray = np.argsort(probabilities)[::-1][:3]
 
         scenarios: list[ScenarioResponse] = []
         for rank, class_idx in enumerate(top_3_indices):
-            major_name: str = le_major.inverse_transform([class_idx])[0]
+            major_name: str = int_to_major[int(class_idx)]
             match_pct: float = round(float(probabilities[class_idx]) * 100, 1)
             career_prospect: str = career_map.get(major_name, "N/A")
 
-            salary_data = pd.DataFrame([{
+            salary_df = pd.DataFrame([{
                 "Math_Score": student.math_score,
                 "Science_Score": student.science_score,
                 "Language_Score": student.language_score,
@@ -94,10 +87,11 @@ def predict(
                 "Total_Score": total_score,
                 "Highest_Score": highest_score,
                 "Lowest_Score": lowest_score,
-                "Target_Major_Encoded": class_idx,
+                "Target_Major_Encoded": int(class_idx),
             }])
+            salary_dmatrix = xgb.DMatrix(salary_df)
             estimated_salary: str = _format_salary(
-                salary_predictor.predict(salary_data)[0]
+                salary_model.predict(salary_dmatrix)[0]
             )
 
             scenarios.append(ScenarioResponse(
@@ -152,4 +146,3 @@ def clear_predict_history(current_user: dict = Depends(get_current_user)) -> dic
         return {"status": "success", "message": "Riwayat berhasil dihapus"}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
-
