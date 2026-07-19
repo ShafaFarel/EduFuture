@@ -1,0 +1,53 @@
+{
+  "builds": [
+    {
+      "src": "FE/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "Backend/api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/auth/(.*)",
+      "dest": "Backend/api/index.py"
+    },
+    {
+      "src": "/predict/(.*)",
+      "dest": "Backend/api/index.py"
+    },
+    {
+      "src": "/mentor/(.*)",
+      "dest": "Backend/api/index.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "Backend/api/index.py"
+    },
+    {
+      "src": "/openapi.json",
+      "dest": "Backend/api/index.py"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "FE/dist/assets/$1"
+    },
+    {
+      "src": "/favicon.svg",
+      "dest": "FE/dist/favicon.svg"
+    },
+    {
+      "src": "/icons.svg",
+      "dest": "FE/dist/icons.svg"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "FE/dist/index.html"
+    }
+  ]
+}

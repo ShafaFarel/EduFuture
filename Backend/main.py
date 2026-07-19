@@ -1,6 +1,5 @@
 import json
 import os
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 import joblib
@@ -14,26 +13,24 @@ from routers import auth, mentor, predict
 MODELS_DIR = Path(__file__).resolve().parent / "models"
 FRONTEND_DIST = Path(__file__).resolve().parent.parent / "FE" / "dist"
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.ml_assets = {
-        "le_style": joblib.load(MODELS_DIR / "learning_encoder.pkl"),
-        "le_major": joblib.load(MODELS_DIR / "major_encoder.pkl"),
-        "model": joblib.load(MODELS_DIR / "major_model.pkl"),
-        "salary_predictor": joblib.load(MODELS_DIR / "salary_model.pkl"),
-    }
-    with open(MODELS_DIR / "career_mapping.json", "r", encoding="utf-8") as f:
-        app.state.ml_assets["career_map"] = json.load(f)
-    yield
-    app.state.ml_assets.clear()
+# Load ML assets globally for serverless/Vercel compatibility
+ml_assets = {
+    "le_style": joblib.load(MODELS_DIR / "learning_encoder.pkl"),
+    "le_major": joblib.load(MODELS_DIR / "major_encoder.pkl"),
+    "model": joblib.load(MODELS_DIR / "major_model.pkl"),
+    "salary_predictor": joblib.load(MODELS_DIR / "salary_model.pkl"),
+}
+with open(MODELS_DIR / "career_mapping.json", "r", encoding="utf-8") as f:
+    ml_assets["career_map"] = json.load(f)
 
 
 app = FastAPI(
     title="EduFuture AI Backend",
     version="1.0.0",
-    lifespan=lifespan,
 )
+
+# Assign ml_assets directly to app.state
+app.state.ml_assets = ml_assets
 
 app.add_middleware(
     CORSMiddleware,
