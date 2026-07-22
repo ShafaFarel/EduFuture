@@ -24,3 +24,5 @@ Backend/.pytest_cache/
 .DS_Store
 *.log
 logs/
+temp_venv/
+

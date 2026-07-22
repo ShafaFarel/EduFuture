@@ -36,13 +36,13 @@ def predict(
     try:
         ml = request.app.state.ml_assets
 
-        style_to_int = ml["style_to_int"]
-        int_to_major = ml["int_to_major"]
+        learning_encoder = ml["learning_encoder"]
+        major_encoder = ml["major_encoder"]
         major_model = ml["major_model"]
         salary_model = ml["salary_model"]
         career_map = ml["career_map"]
 
-        style_encoded: int = style_to_int[student.learning_style]
+        style_encoded: int = int(learning_encoder.transform([student.learning_style])[0])
 
         scores = [
             student.math_score,
@@ -67,13 +67,12 @@ def predict(
             "Lowest_Score": lowest_score,
         }])
 
-        dmatrix = xgb.DMatrix(input_df)
-        probabilities: np.ndarray = major_model.predict(dmatrix)[0]
+        probabilities: np.ndarray = major_model.predict_proba(input_df)[0]
         top_3_indices: np.ndarray = np.argsort(probabilities)[::-1][:3]
 
         scenarios: list[ScenarioResponse] = []
         for rank, class_idx in enumerate(top_3_indices):
-            major_name: str = int_to_major[int(class_idx)]
+            major_name: str = str(major_encoder.inverse_transform([int(class_idx)])[0])
             match_pct: float = round(float(probabilities[class_idx]) * 100, 1)
             career_prospect: str = career_map.get(major_name, "N/A")
 
@@ -89,10 +88,8 @@ def predict(
                 "Lowest_Score": lowest_score,
                 "Target_Major_Encoded": int(class_idx),
             }])
-            salary_dmatrix = xgb.DMatrix(salary_df)
-            estimated_salary: str = _format_salary(
-                salary_model.predict(salary_dmatrix)[0]
-            )
+            salary_pred = float(salary_model.predict(salary_df)[0])
+            estimated_salary: str = _format_salary(salary_pred)
 
             scenarios.append(ScenarioResponse(
                 scenario_type=SCENARIO_LABELS[rank],

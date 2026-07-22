@@ -1,8 +1,8 @@
 import json
 import os
+import pickle
 from pathlib import Path
 
-import xgboost as xgb
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -13,30 +13,26 @@ from routers import auth, mentor, predict
 MODELS_DIR = Path(__file__).resolve().parent / "models"
 FRONTEND_DIST = Path(__file__).resolve().parent.parent / "FE" / "dist"
 
-# Load encoder JSON (menggantikan LabelEncoder scikit-learn)
-with open(MODELS_DIR / "learning_encoder.json", encoding="utf-8") as f:
-    learning_classes: list[str] = json.load(f)
+# Load encoders (.pkl)
+with open(MODELS_DIR / "learning_encoder.pkl", "rb") as f:
+    learning_encoder = pickle.load(f)
 
-with open(MODELS_DIR / "major_encoder.json", encoding="utf-8") as f:
-    major_classes: list[str] = json.load(f)
+with open(MODELS_DIR / "major_encoder.pkl", "rb") as f:
+    major_encoder = pickle.load(f)
 
 with open(MODELS_DIR / "career_mapping.json", encoding="utf-8") as f:
     career_map: dict = json.load(f)
 
-# Load model XGBoost format native — tidak butuh scikit-learn
-major_model = xgb.Booster()
-major_model.load_model(str(MODELS_DIR / "major_model.ubj"))
+# Load XGBoost models (.pkl)
+with open(MODELS_DIR / "major_model.pkl", "rb") as f:
+    major_model = pickle.load(f)
 
-salary_model = xgb.Booster()
-salary_model.load_model(str(MODELS_DIR / "salary_model.ubj"))
-
-# Lookup dict pengganti LabelEncoder
-style_to_int: dict[str, int] = {s: i for i, s in enumerate(learning_classes)}
-int_to_major: dict[int, str] = {i: m for i, m in enumerate(major_classes)}
+with open(MODELS_DIR / "salary_model.pkl", "rb") as f:
+    salary_model = pickle.load(f)
 
 ml_assets = {
-    "style_to_int": style_to_int,
-    "int_to_major": int_to_major,
+    "learning_encoder": learning_encoder,
+    "major_encoder": major_encoder,
     "major_model": major_model,
     "salary_model": salary_model,
     "career_map": career_map,
