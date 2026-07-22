@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import xgboost as xgb
 from fastapi import APIRouter, Depends, HTTPException, Request
+
 
 from database import supabase
 from dependencies import get_current_user
