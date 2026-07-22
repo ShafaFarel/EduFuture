@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('access_token');
@@ -16,7 +16,15 @@ async function apiRequest(endpoint, options = {}) {
     headers,
   });
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (err) {
+    if (!response.ok) {
+      throw new Error(`Gagal terhubung ke server Backend (${response.status}). Pastikan server Backend menyala.`);
+    }
+    data = {};
+  }
 
   if (!response.ok) {
     throw new Error(data.detail || 'Terjadi kesalahan pada server.');
@@ -24,6 +32,7 @@ async function apiRequest(endpoint, options = {}) {
 
   return data;
 }
+
 
 export const api = {
   register: (email, password) => {
