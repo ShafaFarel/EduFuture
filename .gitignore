@@ -24,5 +24,7 @@ Backend/.pytest_cache/
 .DS_Store
 *.log
 logs/
+proposal.md
 temp_venv/
+
 
